@@ -199,7 +199,7 @@ services:
   # Frontend web application.
   web:
     # image: langgenius/dify-web:0.5.1
-    image: difyregistry.azurecr.io/dify-apps/dify-web:202402261741
+    image: difyregistry.azurecr.io/dify-apps/mr-a-web:2020402270234
     restart: always
     environment:
       EDITION: SELF_HOSTED
