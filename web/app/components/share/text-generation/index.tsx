@@ -374,7 +374,7 @@ const TextGeneration: FC<IMainProps> = ({
       if (canReplaceLogo)
         document.title = `${siteInfo.title}`
       else
-        document.title = `${siteInfo.title}`
+        document.title = `${siteInfo.title} - Powered by Mr.A Microsoft South ATS Team.`
     }
   }, [siteInfo?.title, canReplaceLogo])
 
@@ -591,7 +591,7 @@ const TextGeneration: FC<IMainProps> = ({
                   <a
                     className='text-gray-500'
                     href={siteInfo.privacy_policy}
-                    target='_blank'>{t('share.chat.privacyPolicyMiddle')}</a>
+                    target='_blank' rel='noopener noreferrer'>{t('share.chat.privacyPolicyMiddle')}</a>
                   {t('share.chat.privacyPolicyRight')}
                 </div>
               </>

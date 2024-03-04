@@ -6,7 +6,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
 <div>
   ### 鉴权
 
-  Service API 使用 `API-Key` 进行鉴权。
+  Dify Service API 使用 `API-Key` 进行鉴权。
 
   建议开发者把 `API-Key` 放在后端存储，而非分享或者放在客户端存储，以免 `API-Key` 泄露，导致财产损失。
 
@@ -198,7 +198,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
           "upload_file_id": ""
         },
         "dataset_process_rule_id": "",
-        "name": "Document.txt",
+        "name": "Dify.txt",
         "created_from": "api",
         "created_by": "",
         "created_at": 1695308667,
@@ -873,7 +873,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
 ---
 
 <Heading
-  url='/datasets/{dataset_id}/segments/{segment_id}'
+  url='/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}'
   method='DELETE'
   title='删除文档分段'
   name='#delete_segment'
@@ -894,7 +894,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
     <CodeGroup
       title="Request"
       tag="DELETE"
-      label="/datasets/{dataset_id}/segments/{segment_id}"
+      label="/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}"
       targetCode={`curl --location --request DELETE '${props.apiBaseUrl}/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json'`}
     >
     ```bash {{ title: 'cURL' }}
@@ -916,7 +916,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
 ---
 
 <Heading
-  url='/datasets/{dataset_id}/segments/{segment_id}'
+  url='/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}'
   method='POST'
   title='更新文档分段'
   name='#update_segment'
@@ -947,7 +947,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty, Paragraph } from 
     <CodeGroup
       title="Request"
       tag="POST"
-      label="/datasets/{dataset_id}/segments/{segment_id}"
+      label="/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}"
       targetCode={`curl --location --request POST '${props.apiBaseUrl}/datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json'\\\n--data-raw '{\"segments\": {\"content\": \"1\",\"answer\": \"1\", \"keywords\": [\"a\"], \"enabled\": false}}'`}
     >
     ```bash {{ title: 'cURL' }}

@@ -91,7 +91,7 @@ const Main: FC<IMainProps> = ({
       if (canReplaceLogo)
         document.title = `${siteInfo.title}`
       else
-        document.title = `${siteInfo.title} - Powered by Dify`
+        document.title = `${siteInfo.title} - Powered by Mr.A Microsoft South ATS Team.`
     }
   }, [siteInfo?.title, canReplaceLogo])
 
@@ -853,7 +853,7 @@ const Main: FC<IMainProps> = ({
         <Header
           title={siteInfo.title}
           icon={siteInfo.icon || ''}
-          icon_background={siteInfo.icon_background}
+          icon_background={siteInfo.icon_background || ''}
           isMobile={isMobile}
           onShowSideBar={showSidebar}
           onCreateNewChat={handleStartChatOnSidebar}

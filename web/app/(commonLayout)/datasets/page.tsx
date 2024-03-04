@@ -7,7 +7,7 @@ const AppList = async () => {
 }
 
 export const metadata = {
-  title: '知识库中心',
+  title: 'Datasets',
 }
 
 export default AppList

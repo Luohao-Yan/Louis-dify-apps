@@ -1,4 +1,4 @@
-import type { I18nText } from '@/utils/language'
+import type { I18nText } from '@/i18n/language'
 
 export type CommonResponse = {
   result: 'success' | 'fail'
@@ -11,6 +11,10 @@ export type OauthResponse = {
 export type SetupStatusResponse = {
   step: 'finished' | 'not_started'
   setup_at?: Date
+}
+
+export type InitValidateStatusResponse = {
+  status: 'finished' | 'not_started'
 }
 
 export type UserProfileResponse = {
@@ -251,11 +255,3 @@ export type ModerationService = (
     text: string
   }
 ) => Promise<ModerateResponse>
-
-export type Utm = {
-  utm_source?: string
-  utm_medium?: string
-  utm_campaign?: string
-  utm_term?: string
-  utm_content?: string
-}

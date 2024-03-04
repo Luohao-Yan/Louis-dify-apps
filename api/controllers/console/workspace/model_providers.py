@@ -1,18 +1,19 @@
 import io
 
+from flask import send_file
+from flask_login import current_user
+from flask_restful import Resource, reqparse
+from werkzeug.exceptions import Forbidden
+
 from controllers.console import api
 from controllers.console.setup import setup_required
 from controllers.console.wraps import account_initialization_required
 from core.model_runtime.entities.model_entities import ModelType
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.utils.encoders import jsonable_encoder
-from flask import send_file
-from flask_login import current_user
-from flask_restful import Resource, reqparse
 from libs.login import login_required
 from services.billing_service import BillingService
 from services.model_provider_service import ModelProviderService
-from werkzeug.exceptions import Forbidden
 
 
 class ModelProviderListApi(Resource):
@@ -186,10 +187,11 @@ class ModelProviderPaymentCheckoutUrlApi(Resource):
     def get(self, provider: str):
         if provider != 'anthropic':
             raise ValueError(f'provider name {provider} is invalid')
-
+        BillingService.is_tenant_owner_or_admin(current_user)
         data = BillingService.get_model_provider_payment_link(provider_name=provider,
                                                               tenant_id=current_user.current_tenant_id,
-                                                              account_id=current_user.id)
+                                                              account_id=current_user.id,
+                                                              prefilled_email=current_user.email)
         return data
 
 

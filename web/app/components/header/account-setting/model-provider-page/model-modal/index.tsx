@@ -246,12 +246,12 @@ const ModelModal: FC<ModelModalProps> = ({
                   (provider.help && (provider.help.title || provider.help.url))
                     ? (
                       <a
-                        href={provider.help?.url[language]}
-                        target='_blank'
+                        href={provider.help?.url[language] || provider.help?.url.en_US}
+                        target='_blank' rel='noopener noreferrer'
                         className='inline-flex items-center text-xs text-primary-600'
                         onClick={e => !provider.help.url && e.preventDefault()}
                       >
-                        {provider.help.title?.[language] || provider.help.url[language]}
+                        {provider.help.title?.[language] || provider.help.url[language] || provider.help.title?.en_US || provider.help.url.en_US}
                         <LinkExternal02 className='ml-1 w-3 h-3' />
                       </a>
                     )
@@ -300,7 +300,7 @@ const ModelModal: FC<ModelModalProps> = ({
                       {t('common.modelProvider.encrypted.front')}
                       <a
                         className='text-primary-600 mx-1'
-                        target={'_blank'}
+                        target='_blank' rel='noopener noreferrer'
                         href='https://pycryptodome.readthedocs.io/en/latest/src/cipher/oaep.html'
                       >
                         PKCS1_OAEP

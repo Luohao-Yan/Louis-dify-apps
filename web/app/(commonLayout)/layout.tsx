@@ -32,7 +32,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 }
 
 export const metadata = {
-  title: 'Application Layout',
+  title: 'Mr.A',
 }
 
 export default Layout

@@ -1,21 +1,20 @@
-import json
 import logging
 from typing import cast
 
 from core.app_runner.app_runner import AppRunner
+from core.application_queue_manager import ApplicationQueueManager, PublishFrom
+from core.entities.application_entities import AgentEntity, ApplicationGenerateEntity, ModelConfigEntity
 from core.features.assistant_cot_runner import AssistantCotApplicationRunner
 from core.features.assistant_fc_runner import AssistantFunctionCallApplicationRunner
-from core.entities.application_entities import ApplicationGenerateEntity, ModelConfigEntity, \
-    AgentEntity
-from core.application_queue_manager import ApplicationQueueManager, PublishFrom
 from core.memory.token_buffer_memory import TokenBufferMemory
 from core.model_manager import ModelInstance
 from core.model_runtime.entities.llm_entities import LLMUsage
+from core.model_runtime.entities.model_entities import ModelFeature
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.moderation.base import ModerationException
 from core.tools.entities.tool_entities import ToolRuntimeVariablePool
 from extensions.ext_database import db
-from models.model import Conversation, Message, App, MessageChain, MessageAgentThought
+from models.model import App, Conversation, Message, MessageAgentThought
 from models.tools import ToolConversationVariables
 
 logger = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ class AssistantApplicationRunner(AppRunner):
         """
         app_record = db.session.query(App).filter(App.id == application_generate_entity.app_id).first()
         if not app_record:
-            raise ValueError(f"App not found")
+            raise ValueError("App not found")
 
         app_orchestration_config = application_generate_entity.app_orchestration_config_entity
 
@@ -169,15 +168,10 @@ class AssistantApplicationRunner(AppRunner):
         # load tool variables
         tool_conversation_variables = self._load_tool_variables(conversation_id=conversation.id,
                                                    user_id=application_generate_entity.user_id,
-                                                   tanent_id=application_generate_entity.tenant_id)
+                                                   tenant_id=application_generate_entity.tenant_id)
 
         # convert db variables to tool variables
         tool_variables = self._convert_db_variables_to_tool_variables(tool_conversation_variables)
-        
-        message_chain = self._init_message_chain(
-            message=message,
-            query=query
-        )
 
         # init model instance
         model_instance = ModelInstance(
@@ -194,6 +188,13 @@ class AssistantApplicationRunner(AppRunner):
             memory=memory,
         )
 
+        # change function call strategy based on LLM model
+        llm_model = cast(LargeLanguageModel, model_instance.model_type_instance)
+        model_schema = llm_model.get_model_schema(model_instance.model, model_instance.credentials)
+
+        if set([ModelFeature.MULTI_TOOL_CALL, ModelFeature.TOOL_CALL]).intersection(model_schema.features or []):
+            agent_entity.strategy = AgentEntity.Strategy.FUNCTION_CALLING
+
         # start agent runner
         if agent_entity.strategy == AgentEntity.Strategy.CHAIN_OF_THOUGHT:
             assistant_cot_runner = AssistantCotApplicationRunner(
@@ -209,12 +210,13 @@ class AssistantApplicationRunner(AppRunner):
                 prompt_messages=prompt_message,
                 variables_pool=tool_variables,
                 db_variables=tool_conversation_variables,
+                model_instance=model_instance
             )
             invoke_result = assistant_cot_runner.run(
-                model_instance=model_instance,
                 conversation=conversation,
                 message=message,
                 query=query,
+                inputs=inputs,
             )
         elif agent_entity.strategy == AgentEntity.Strategy.FUNCTION_CALLING:
             assistant_fc_runner = AssistantFunctionCallApplicationRunner(
@@ -229,10 +231,10 @@ class AssistantApplicationRunner(AppRunner):
                 memory=memory,
                 prompt_messages=prompt_message,
                 variables_pool=tool_variables,
-                db_variables=tool_conversation_variables
+                db_variables=tool_conversation_variables,
+                model_instance=model_instance
             )
             invoke_result = assistant_fc_runner.run(
-                model_instance=model_instance,
                 conversation=conversation,
                 message=message,
                 query=query,
@@ -246,13 +248,13 @@ class AssistantApplicationRunner(AppRunner):
             agent=True
         )
 
-    def _load_tool_variables(self, conversation_id: str, user_id: str, tanent_id: str) -> ToolConversationVariables:
+    def _load_tool_variables(self, conversation_id: str, user_id: str, tenant_id: str) -> ToolConversationVariables:
         """
         load tool variables from database
         """
         tool_variables: ToolConversationVariables = db.session.query(ToolConversationVariables).filter(
             ToolConversationVariables.conversation_id == conversation_id,
-            ToolConversationVariables.tenant_id == tanent_id
+            ToolConversationVariables.tenant_id == tenant_id
         ).first()
 
         if tool_variables:
@@ -263,7 +265,7 @@ class AssistantApplicationRunner(AppRunner):
             tool_variables = ToolConversationVariables(
                 conversation_id=conversation_id,
                 user_id=user_id,
-                tenant_id=tanent_id,
+                tenant_id=tenant_id,
                 variables_str='[]',
             )
             db.session.add(tool_variables)
@@ -281,38 +283,6 @@ class AssistantApplicationRunner(AppRunner):
             'tenant_id': db_variables.tenant_id,
             'pool': db_variables.variables
         })
-
-    def _init_message_chain(self, message: Message, query: str) -> MessageChain:
-        """
-        Init MessageChain
-        :param message: message
-        :param query: query
-        :return:
-        """
-        message_chain = MessageChain(
-            message_id=message.id,
-            type="AgentExecutor",
-            input=json.dumps({
-                "input": query
-            })
-        )
-
-        db.session.add(message_chain)
-        db.session.commit()
-
-        return message_chain
-
-    def _save_message_chain(self, message_chain: MessageChain, output_text: str) -> None:
-        """
-        Save MessageChain
-        :param message_chain: message chain
-        :param output_text: output text
-        :return:
-        """
-        message_chain.output = json.dumps({
-            "output": output_text
-        })
-        db.session.commit()
 
     def _get_usage_of_all_agent_thoughts(self, model_config: ModelConfigEntity,
                                          message: Message) -> LLMUsage:

@@ -1,10 +1,12 @@
-# -*- coding:utf-8 -*-
+import json
 from functools import wraps
 
-from controllers.console.workspace.error import AccountNotInitializedError
-from flask import abort, current_app
+from flask import abort, current_app, request
 from flask_login import current_user
+
+from controllers.console.workspace.error import AccountNotInitializedError
 from services.feature_service import FeatureService
+from services.operation_service import OperationService
 
 
 def account_initialization_required(view):
@@ -54,6 +56,7 @@ def cloud_edition_billing_resource_check(resource: str,
                 members = features.members
                 apps = features.apps
                 vector_space = features.vector_space
+                documents_upload_quota = features.documents_upload_quota
                 annotation_quota_limit = features.annotation_quota_limit
 
                 if resource == 'members' and 0 < members.limit <= members.size:
@@ -62,6 +65,13 @@ def cloud_edition_billing_resource_check(resource: str,
                     abort(403, error_msg)
                 elif resource == 'vector_space' and 0 < vector_space.limit <= vector_space.size:
                     abort(403, error_msg)
+                elif resource == 'documents' and 0 < documents_upload_quota.limit <= documents_upload_quota.size:
+                    # The api of file upload is used in the multiple places, so we need to check the source of the request from datasets
+                    source = request.args.get('source')
+                    if source == 'datasets':
+                        abort(403, error_msg)
+                    else:
+                        return view(*args, **kwargs)
                 elif resource == 'workspace_custom' and not features.can_replace_logo:
                     abort(403, error_msg)
                 elif resource == 'annotation' and 0 < annotation_quota_limit.limit < annotation_quota_limit.size:
@@ -73,3 +83,20 @@ def cloud_edition_billing_resource_check(resource: str,
         return decorated
     return interceptor
 
+
+def cloud_utm_record(view):
+    @wraps(view)
+    def decorated(*args, **kwargs):
+        try:
+            features = FeatureService.get_features(current_user.current_tenant_id)
+
+            if features.billing.enabled:
+                utm_info = request.cookies.get('utm_info')
+
+                if utm_info:
+                    utm_info = json.loads(utm_info)
+                    OperationService.record_utm(current_user.current_tenant_id, utm_info)
+        except Exception as e:
+            pass
+        return view(*args, **kwargs)
+    return decorated

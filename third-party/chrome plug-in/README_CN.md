@@ -1,6 +1,6 @@
-## Chrome Dify ChatBot插件
+## Chrome Mr.A ChatBot插件
 
-### 方式1：Chrome插件商店 * [点击访问](https://chrome.google.com/webstore/detail/dify-chatbot/ceehdapohffmjmkdcifjofadiaoeggaf/related?hl=zh-CN&authuser=0) *
+### 方式1：Chrome插件商店 * [点击访问](https://chrome.google.com/webstore/detail/Mr.A-chatbot/ceehdapohffmjmkdcifjofadiaoeggaf/related?hl=zh-CN&authuser=0) *
  
 ### 方式2：本地开发者模式加载
 
@@ -20,7 +20,7 @@
       - options.js          插件配置JS脚本
 
 ### 插件导入完成后，后续配置无差异
-- 创建Dify应用配置，在应用概览中点击嵌入，切换到安装Chrome浏览器扩展视图，点击copy按钮获取ChatBot Url，如图：
+- 创建Mr.A应用配置，在应用概览中点击嵌入，切换到安装Chrome浏览器扩展视图，点击copy按钮获取ChatBot Url，如图：
 
 ![img-2.png](images/img-2.png)
 - 点击保存，确认提示配置成功即可
@@ -28,6 +28,6 @@
 ![img-3.png](images/img-3.png)
 
 - 保险起见重启浏览器确保所有分页刷新成功
-- Chrome打开任意页面均可正常加载DIfy机器人浮动栏，后续如需更换机器人只需要变更ChatBot Url即可
+- Chrome打开任意页面均可正常加载Mr.A机器人浮动栏，后续如需更换机器人只需要变更ChatBot Url即可
 
 ![img-4.png](images/img-4.png)

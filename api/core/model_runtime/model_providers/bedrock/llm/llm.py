@@ -1,17 +1,34 @@
+import json
 import logging
-from typing import Generator, List, Optional, Union
+from collections.abc import Generator
+from typing import Optional, Union
 
 import boto3
-from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError, ServiceNotInRegionError, UnknownServiceError
 from botocore.config import Config
-import json
+from botocore.exceptions import (
+    ClientError,
+    EndpointConnectionError,
+    NoRegionError,
+    ServiceNotInRegionError,
+    UnknownServiceError,
+)
 
 from core.model_runtime.entities.llm_entities import LLMResult, LLMResultChunk, LLMResultChunkDelta
-
-from core.model_runtime.entities.message_entities import (AssistantPromptMessage, PromptMessage,
-                                                          PromptMessageTool, SystemPromptMessage, UserPromptMessage)
-from core.model_runtime.errors.invoke import (InvokeAuthorizationError, InvokeBadRequestError, InvokeConnectionError,
-                                              InvokeError, InvokeRateLimitError, InvokeServerUnavailableError)
+from core.model_runtime.entities.message_entities import (
+    AssistantPromptMessage,
+    PromptMessage,
+    PromptMessageTool,
+    SystemPromptMessage,
+    UserPromptMessage,
+)
+from core.model_runtime.errors.invoke import (
+    InvokeAuthorizationError,
+    InvokeBadRequestError,
+    InvokeConnectionError,
+    InvokeError,
+    InvokeRateLimitError,
+    InvokeServerUnavailableError,
+)
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 
@@ -21,7 +38,7 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
 
     def _invoke(self, model: str, credentials: dict,
                 prompt_messages: list[PromptMessage], model_parameters: dict,
-                tools: Optional[list[PromptMessageTool]] = None, stop: Optional[List[str]] = None,
+                tools: Optional[list[PromptMessageTool]] = None, stop: Optional[list[str]] = None,
                 stream: bool = True, user: Optional[str] = None) \
             -> Union[LLMResult, Generator]:
         """
@@ -143,7 +160,7 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
 
         return message_text
 
-    def _convert_messages_to_prompt(self, messages: List[PromptMessage], model_prefix: str) -> str:
+    def _convert_messages_to_prompt(self, messages: list[PromptMessage], model_prefix: str) -> str:
         """
         Format a list of messages into a full prompt for the Anthropic, Amazon and Llama models
 
@@ -165,7 +182,7 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
         # trim off the trailing ' ' that might come from the "Assistant: "
         return text.rstrip()
 
-    def _create_payload(self, model_prefix: str, prompt_messages: list[PromptMessage], model_parameters: dict, stop: Optional[List[str]] = None, stream: bool = True):
+    def _create_payload(self, model_prefix: str, prompt_messages: list[PromptMessage], model_parameters: dict, stop: Optional[list[str]] = None, stream: bool = True):
         """
         Create payload for bedrock api call depending on model provider
         """
@@ -215,7 +232,7 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
 
     def _generate(self, model: str, credentials: dict,
                   prompt_messages: list[PromptMessage], model_parameters: dict,
-                  stop: Optional[List[str]] = None, stream: bool = True,
+                  stop: Optional[list[str]] = None, stream: bool = True,
                   user: Optional[str] = None) -> Union[LLMResult, Generator]:
         """
         Invoke large language model
@@ -250,9 +267,12 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
             invoke = runtime_client.invoke_model
 
         try:
+            body_jsonstr=json.dumps(payload)
             response = invoke(
-                body=json.dumps(payload),
                 modelId=model,
+                contentType="application/json",
+                accept= "*/*",
+                body=body_jsonstr
             )
         except ClientError as ex:
             error_code = ex.response['Error']['Code']
@@ -385,7 +405,6 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
             if not chunk:
                 exception_name = next(iter(event))
                 full_ex_msg = f"{exception_name}: {event[exception_name]['message']}"
-
                 raise self._map_client_to_invoke_error(exception_name, full_ex_msg)
 
             payload = json.loads(chunk.get('bytes').decode())
@@ -396,7 +415,7 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
                 finish_reason = payload.get("completion_reason")
  
             elif model_prefix == "anthropic":
-                content_delta = payload
+                content_delta = payload.get("completion")
                 finish_reason = payload.get("stop_reason")
 
             elif model_prefix == "cohere":
@@ -410,12 +429,12 @@ class BedrockLargeLanguageModel(LargeLanguageModel):
             else:
                 raise ValueError(f"Got unknown model prefix {model_prefix} when handling stream response")
 
-            index += 1
-           
+            # transform assistant message to prompt message
             assistant_prompt_message = AssistantPromptMessage(
                 content = content_delta if content_delta else '',
             )
-  
+            index += 1
+           
             if not finish_reason:
                 yield LLMResultChunk(
                     model=model,

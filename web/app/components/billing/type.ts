@@ -17,9 +17,14 @@ export type PlanInfo = {
   teamMembers: number
   buildApps: number
   vectorSpace: number
+  documentsUploadQuota: number
   documentProcessingPriority: Priority
   logHistory: number
-  messageRequest: number
+  customTools: string | number
+  messageRequest: {
+    en: string | number
+    zh: string | number
+  }
   annotatedResponse: number
 }
 

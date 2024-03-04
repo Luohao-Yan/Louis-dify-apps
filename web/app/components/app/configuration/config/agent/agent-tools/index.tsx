@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import cn from 'classnames'
 import { useContext } from 'use-context-selector'
 import produce from 'immer'
+import { useFormattingChangedDispatcher } from '../../../debug/hooks'
 import ChooseTool from './choose-tool'
 import SettingBuiltInTool from './setting-built-in-tool'
 import Panel from '@/app/components/app/configuration/base/feature-panel'
@@ -27,6 +28,7 @@ const AgentTools: FC = () => {
   const { t } = useTranslation()
   const [isShowChooseTool, setIsShowChooseTool] = useState(false)
   const { modelConfig, setModelConfig, collectionList } = useContext(ConfigContext)
+  const formattingChangedDispatcher = useFormattingChangedDispatcher()
 
   const [currentTool, setCurrentTool] = useState<AgentToolWithMoreInfo>(null)
   const [selectedProviderId, setSelectedProviderId] = useState<string | undefined>(undefined)
@@ -49,6 +51,7 @@ const AgentTools: FC = () => {
     })
     setModelConfig(newModelConfig)
     setIsShowSettingTool(false)
+    formattingChangedDispatcher()
   }
 
   return (
@@ -141,6 +144,7 @@ const AgentTools: FC = () => {
                           draft.agentConfig.tools.splice(index, 1)
                         })
                         setModelConfig(newModelConfig)
+                        formattingChangedDispatcher()
                       }}>
                         <Trash03 className='w-4 h-4 text-gray-500' />
                       </div>
@@ -149,24 +153,25 @@ const AgentTools: FC = () => {
                   )
                   : (
                     <div className='hidden group-hover:flex items-center'>
-                      {item.provider_type === CollectionType.builtIn && (
-                        <TooltipPlus
-                          popupContent={t('tools.setBuiltInTools.infoAndSetting')}
-                        >
-                          <div className='mr-1 p-1 rounded-md hover:bg-black/5  cursor-pointer' onClick={() => {
-                            setCurrentTool(item)
-                            setIsShowSettingTool(true)
-                          }}>
-                            <InfoCircle className='w-4 h-4 text-gray-500' />
-                          </div>
-                        </TooltipPlus>
-                      )}
+                      {/* {item.provider_type === CollectionType.builtIn && ( */}
+                      <TooltipPlus
+                        popupContent={t('tools.setBuiltInTools.infoAndSetting')}
+                      >
+                        <div className='mr-1 p-1 rounded-md hover:bg-black/5  cursor-pointer' onClick={() => {
+                          setCurrentTool(item)
+                          setIsShowSettingTool(true)
+                        }}>
+                          <InfoCircle className='w-4 h-4 text-gray-500' />
+                        </div>
+                      </TooltipPlus>
+                      {/* )} */}
 
                       <div className='p-1 rounded-md hover:bg-black/5 cursor-pointer' onClick={() => {
                         const newModelConfig = produce(modelConfig, (draft) => {
                           draft.agentConfig.tools.splice(index, 1)
                         })
                         setModelConfig(newModelConfig)
+                        formattingChangedDispatcher()
                       }}>
                         <Trash03 className='w-4 h-4 text-gray-500' />
                       </div>
@@ -183,6 +188,7 @@ const AgentTools: FC = () => {
                         (draft.agentConfig.tools[index] as any).enabled = enabled
                       })
                       setModelConfig(newModelConfig)
+                      formattingChangedDispatcher()
                     }} />
                 </div>
               </div>
@@ -203,6 +209,7 @@ const AgentTools: FC = () => {
             toolName={currentTool?.tool_name as string}
             setting={currentTool?.tool_parameters as any}
             collection={currentTool?.collection as Collection}
+            isBuiltIn={currentTool?.collection?.type === CollectionType.builtIn}
             onSave={handleToolSettingChange}
             onHide={() => setIsShowSettingTool(false)}
           />)

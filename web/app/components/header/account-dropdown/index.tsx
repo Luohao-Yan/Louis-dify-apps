@@ -3,20 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { Fragment, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useContext } from 'use-context-selector'
-import classNames from 'classnames'
-import Link from 'next/link'
 import { Menu, Transition } from '@headlessui/react'
-import Indicator from '../indicator'
 import AccountAbout from '../account-about'
 import WorkplaceSelector from './workplace-selector'
 import I18n from '@/context/i18n'
 import Avatar from '@/app/components/base/avatar'
 import { logout } from '@/service/common'
 import { useAppContext } from '@/context/app-context'
-import { ArrowUpRight, ChevronDown } from '@/app/components/base/icons/src/vender/line/arrows'
+import { ChevronDown } from '@/app/components/base/icons/src/vender/line/arrows'
 import { LogOut01 } from '@/app/components/base/icons/src/vender/line/general'
 import { useModalContext } from '@/context/modal-context'
-import { LanguagesSupportedUnderscore, getModelRuntimeSupported } from '@/utils/language'
 export type IAppSelecotr = {
   isMobile: boolean
 }
@@ -30,7 +26,6 @@ export default function AppSelector({ isMobile }: IAppSelecotr) {
   const [aboutVisible, setAboutVisible] = useState(false)
 
   const { locale } = useContext(I18n)
-  const language = getModelRuntimeSupported(locale)
   const { t } = useTranslation()
   const { userProfile, langeniusVersionInfo } = useAppContext()
   const { setShowAccountSettingModal } = useModalContext()
@@ -62,7 +57,7 @@ export default function AppSelector({ isMobile }: IAppSelecotr) {
                   <Avatar name={userProfile.name} className='sm:mr-2 mr-0' size={32} />
                   {!isMobile && <>
                     {userProfile.name}
-                    <ChevronDown className="w-3 h-3 ml-1 text-gray-700"/>
+                    <ChevronDown className="w-3 h-3 ml-1 text-gray-700" />
                   </>}
                 </Menu.Button>
               </div>
@@ -101,11 +96,11 @@ export default function AppSelector({ isMobile }: IAppSelecotr) {
                         <div>{t('common.userProfile.settings')}</div>
                       </div>
                     </Menu.Item>
-                    <Menu.Item>
+                    {/* <Menu.Item>
                       <Link
                         className={classNames(itemClassName, 'group justify-between')}
                         href='https://feedback.dify.ai/'
-                        target='_blank'>
+                        target='_blank' rel='noopener noreferrer'>
                         <div>{t('common.userProfile.roadmapAndFeedback')}</div>
                         <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
                       </Link>
@@ -114,35 +109,35 @@ export default function AppSelector({ isMobile }: IAppSelecotr) {
                       <Link
                         className={classNames(itemClassName, 'group justify-between')}
                         href='https://discord.gg/5AEfbxcd9k'
-                        target='_blank'>
+                        target='_blank' rel='noopener noreferrer'>
                         <div>{t('common.userProfile.community')}</div>
                         <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
                       </Link>
-                    </Menu.Item>
-                    <Menu.Item>
+                    </Menu.Item> */}
+                    {/* <Menu.Item>
                       <Link
                         className={classNames(itemClassName, 'group justify-between')}
                         href={
-                          language !== LanguagesSupportedUnderscore[1] ? 'https://docs.dify.ai/' : `https://docs.dify.ai/v/${locale.toLowerCase()}/`
+                          locale !== LanguagesSupported[1] ? 'https://docs.dify.ai/' : `https://docs.dify.ai/v/${locale.toLowerCase()}/`
                         }
-                        target='_blank'>
+                        target='_blank' rel='noopener noreferrer'>
                         <div>{t('common.userProfile.helpCenter')}</div>
                         <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
                       </Link>
-                    </Menu.Item>
-                    {
+                    </Menu.Item> */}
+                    {/* {
                       document?.body?.getAttribute('data-public-site-about') !== 'hide' && (
-                        <Menu.Item>
-                          <div className={classNames(itemClassName, 'justify-between')} onClick={() => setAboutVisible(true)}>
-                            <div>{t('common.userProfile.about')}</div>
-                            <div className='flex items-center'>
-                              <div className='mr-2 text-xs font-normal text-gray-500'>{langeniusVersionInfo.current_version}</div>
-                              <Indicator color={langeniusVersionInfo.current_version === langeniusVersionInfo.latest_version ? 'green' : 'orange'} />
-                            </div>
-                          </div>
-                        </Menu.Item>
+                        // <Menu.Item>
+                        //   <div className={classNames(itemClassName, 'justify-between')} onClick={() => setAboutVisible(true)}>
+                        //     <div>{t('common.userProfile.about')}</div>
+                        //     <div className='flex items-center'>
+                        //       <div className='mr-2 text-xs font-normal text-gray-500'>{langeniusVersionInfo.current_version}</div>
+                        //       <Indicator color={langeniusVersionInfo.current_version === langeniusVersionInfo.latest_version ? 'green' : 'orange'} />
+                        //     </div>
+                        //   </div>
+                        // </Menu.Item>
                       )
-                    }
+                    } */}
                   </div>
                   <Menu.Item>
                     <div className='p-1' onClick={() => handleLogout()}>
